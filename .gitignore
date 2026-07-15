@@ -1,0 +1,46 @@
+# binaries
+/build/
+/artifacts/
+/sim7600d
+/sim7600d.db
+/sim7600d.db-*
+auth_token
+
+# local environment and secret material
+.env
+.env.*
+!.env.example
+!.env.*.example
+/.secrets/
+/secrets/
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+keystore.properties
+
+# editors
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# go
+*.test
+*.out
+coverage.txt
+/vendor/
+
+# python tooling
+__pycache__/
+*.py[cod]
+
+# SIMCom reference documents are useful locally, but their license does not
+# permit redistribution. Keep downloaded sources and generated extracts beside
+# the tracked reference README without committing them.
+/docs/reference/simcom/*.pdf
+/docs/reference/simcom/*.generated.md
+
+# web SDK
+web/client/node_modules/

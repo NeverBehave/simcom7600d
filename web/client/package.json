@@ -1,0 +1,29 @@
+{
+  "name": "@sim7600d/client",
+  "version": "0.0.0-dev",
+  "description": "Typed TypeScript SDK for the SIM7600D control API.",
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./types": "./types.ts"
+  },
+  "files": [
+    "index.ts",
+    "types.ts",
+    "src/",
+    "README.md"
+  ],
+  "scripts": {
+    "gen": "openapi-ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --import tsx test/*.test.ts"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.99.0",
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.28.1",
+    "tsx": "^4.23.1",
+    "typescript": "^5.4.0"
+  }
+}
