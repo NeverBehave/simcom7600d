@@ -1,6 +1,11 @@
 package org.n4b5.sim7600.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,9 +18,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -30,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.async
@@ -51,6 +59,14 @@ private suspend fun loadMessages(client: ApiClient): List<SmsMessage> = coroutin
     val inbound = async { client.listSms("in") }
     val outbound = async { client.listSms("out") }
     inbound.await() + outbound.await()
+}
+
+private fun copyMessageText(context: Context, text: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText("Message text", text))
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+        Toast.makeText(context, "Message text copied", Toast.LENGTH_SHORT).show()
+    }
 }
 
 @Composable
@@ -138,6 +154,7 @@ fun MessageThreadScreen(client: ApiClient, threadKey: String, nav: NavHostContro
     var selected by remember { mutableStateOf<SmsMessage?>(null) }
     var busy by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     suspend fun refresh() {
         messages = loadMessages(client).filter { phoneKey(it.peer).ifBlank { it.peer } == threadKey }.sortedBy { it.timestamp }
     }
@@ -197,28 +214,52 @@ fun MessageThreadScreen(client: ApiClient, threadKey: String, nav: NavHostContro
         }
     }
     selected?.let { message ->
-        AlertDialog(
-            onDismissRequest = { selected = null },
-            title = { Text("Message details") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("ID: ${message.id}")
-                    Text("Direction: ${message.direction}")
-                    Text("Time: ${message.timestamp}")
-                    Text("Encoding: ${message.encoding}; parts: ${message.parts}")
-                    if (message.state.isNotBlank()) Text("State: ${message.state}")
-                    if (message.errorDetail.isNotBlank()) Text("Error: ${message.errorDetail}")
-                }
+        MessageDetailsDialog(
+            message = message,
+            onClose = { selected = null },
+            onCopy = {
+                copyMessageText(context, it)
+                selected = null
             },
-            confirmButton = { TextButton(onClick = { selected = null }) { Text("Close") } },
-            dismissButton = {
-                TextButton(onClick = {
-                    scope.launch {
-                        runCatching { client.deleteSms(message.id); refresh() }.onFailure { error = it.message.orEmpty() }
-                        selected = null
-                    }
-                }) { Text("Delete") }
+            onDelete = {
+                scope.launch {
+                    runCatching { client.deleteSms(message.id); refresh() }.onFailure { error = it.message.orEmpty() }
+                    selected = null
+                }
             },
         )
     }
+}
+
+@Composable
+internal fun MessageDetailsDialog(
+    message: SmsMessage,
+    onClose: () -> Unit,
+    onCopy: (String) -> Unit,
+    onDelete: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text("Message details") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("ID: ${message.id}")
+                Text("Direction: ${message.direction}")
+                Text("Time: ${message.timestamp}")
+                Text("Encoding: ${message.encoding}; parts: ${message.parts}")
+                if (message.state.isNotBlank()) Text("State: ${message.state}")
+                if (message.errorDetail.isNotBlank()) Text("Error: ${message.errorDetail}")
+            }
+        },
+        confirmButton = {
+            Row {
+                TextButton(onClick = { onCopy(message.body) }) {
+                    Icon(Icons.Default.ContentCopy, contentDescription = null)
+                    Text("Copy text", modifier = Modifier.padding(start = 8.dp))
+                }
+                TextButton(onClick = onClose) { Text("Close") }
+            }
+        },
+        dismissButton = { TextButton(onClick = onDelete) { Text("Delete") } },
+    )
 }
