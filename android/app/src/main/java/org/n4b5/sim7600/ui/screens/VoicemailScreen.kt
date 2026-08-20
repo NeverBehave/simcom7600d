@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Voicemail
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -118,6 +119,7 @@ fun VoicemailDetailScreen(client: ApiClient, voicemailId: String, nav: NavHostCo
     var item by remember { mutableStateOf<Voicemail?>(null) }
     var error by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
+    var confirmDelete by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     suspend fun refresh() { item = client.getVoicemail(voicemailId) }
     LaunchedEffect(client, voicemailId) {
@@ -167,15 +169,35 @@ fun VoicemailDetailScreen(client: ApiClient, voicemailId: String, nav: NavHostCo
                     Text(if (current.read) "Mark unheard" else "Mark heard", Modifier.padding(start = 8.dp))
                 }
                 OutlinedButton(onClick = {
-                    scope.launch {
-                        busy = true
-                        runCatching { client.deleteVoicemail(current.id) }.onSuccess { nav.popBackStack() }.onFailure { error = it.message.orEmpty() }
-                        busy = false
-                    }
+                    confirmDelete = true
                 }, enabled = !busy) { Icon(Icons.Default.Delete, null); Text("Delete", Modifier.padding(start = 8.dp)) }
             }
         }
         if (error.isNotBlank()) item { ErrorCard(error) }
+    }
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { if (!busy) confirmDelete = false },
+            title = { Text("Delete voicemail?") },
+            text = { Text("This voicemail will not return after the next sync.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            busy = true
+                            runCatching { client.deleteVoicemail(current.id) }
+                                .onSuccess { confirmDelete = false; nav.popBackStack() }
+                                .onFailure { error = it.message.orEmpty() }
+                            busy = false
+                        }
+                    },
+                    enabled = !busy,
+                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = false }, enabled = !busy) { Text("Cancel") }
+            },
+        )
     }
 }
 

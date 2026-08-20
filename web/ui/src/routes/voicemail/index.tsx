@@ -111,6 +111,7 @@ function Detail() {
   if (!item || !id) return <EmptyState title="Voicemail not found" />;
 
   async function deleteItem() {
+    if (!window.confirm('Delete this voicemail? It will not return after the next sync.')) return;
     await remove.mutateAsync(id!);
     navigate('/voicemail', { replace: true });
   }
