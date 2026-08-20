@@ -209,6 +209,15 @@ the newest supported T-Mobile `MBOXUPDATE` provisioning SMS, connects to that
 carrier IMAPS host read-only, and stores playable audio in SQLite. Install
 `ffmpeg` in the service PATH so AMR messages can be normalized to WAV. Mailbox
 credentials are used in memory and are not written to logs or configuration.
+An authorized live read-only fetch can be checked without persisting the
+provisioning SMS:
+
+```sh
+read -rs SIM7600D_VOICEMAIL_MBOXUPDATE
+export SIM7600D_VOICEMAIL_MBOXUPDATE
+go test -tags hardware ./internal/voicemail -run TestLiveMailboxFetch
+unset SIM7600D_VOICEMAIL_MBOXUPDATE
+```
 
 Open the configured address in a browser and enter that token. The OpenAPI
 3.1 document is available without authentication at `/openapi.json`; all
