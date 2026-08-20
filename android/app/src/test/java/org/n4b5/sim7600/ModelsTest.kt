@@ -6,6 +6,7 @@ import org.n4b5.sim7600.model.SmsMessage
 import org.n4b5.sim7600.model.formatPhone
 import org.n4b5.sim7600.model.groupMessages
 import org.n4b5.sim7600.model.phoneKey
+import org.n4b5.sim7600.ui.screens.formatVoicemailDuration
 
 class ModelsTest {
     @Test fun phoneNumbersNormalizeForConversationGrouping() {
@@ -20,6 +21,11 @@ class ModelsTest {
         assertEquals("2025550123", thread.key)
         assertEquals(listOf("1", "2"), thread.messages.map { it.id })
         assertEquals("later", thread.latest.body)
+    }
+
+    @Test fun voicemailDurationUsesMediaTimeFormat() {
+        assertEquals("0:00", formatVoicemailDuration(0))
+        assertEquals("1:05", formatVoicemailDuration(65_000))
     }
 
     private fun message(id: String, direction: String, peer: String, body: String, timestamp: String) = SmsMessage(

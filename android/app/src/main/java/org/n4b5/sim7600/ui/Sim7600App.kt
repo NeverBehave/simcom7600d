@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.ForwardToInbox
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Voicemail
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -52,6 +53,8 @@ import org.n4b5.sim7600.ui.screens.EventsScreen
 import org.n4b5.sim7600.ui.screens.ForwardingScreen
 import org.n4b5.sim7600.ui.screens.MessageThreadScreen
 import org.n4b5.sim7600.ui.screens.MessagesScreen
+import org.n4b5.sim7600.ui.screens.VoicemailDetailScreen
+import org.n4b5.sim7600.ui.screens.VoicemailScreen
 
 private data class Destination(val route: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 
@@ -59,7 +62,7 @@ private val bottomDestinations = listOf(
     Destination("dashboard", "Home", Icons.Default.Dashboard),
     Destination("messages", "Messages", Icons.Default.Message),
     Destination("calls", "Calls", Icons.Default.Call),
-    Destination("forwarding", "Forward", Icons.Default.ForwardToInbox),
+    Destination("voicemail", "Voicemail", Icons.Default.Voicemail),
     Destination("more", "More", Icons.Default.MoreHoriz),
 )
 
@@ -118,6 +121,10 @@ fun Sim7600App(viewModel: AppViewModel) {
                     onNotificationErrorHandled = { viewModel.notificationCallActionError = "" },
                 )
             }
+            composable("voicemail") { VoicemailScreen(client, nav) }
+            composable("voicemail/{id}") { entry ->
+                VoicemailDetailScreen(client, entry.arguments?.getString("id").orEmpty(), nav)
+            }
             composable("forwarding") { ForwardingScreen(client) }
             composable("events") { EventsScreen(client) }
             composable("admin") { AdminScreen(client) }
@@ -174,6 +181,7 @@ private fun MoreScreen(nav: NavHostController, viewModel: AppViewModel) {
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("More", style = androidx.compose.material3.MaterialTheme.typography.headlineSmall)
         Button(onClick = { nav.navigate("events") }, modifier = Modifier.fillMaxWidth()) { Text("Event log") }
+        Button(onClick = { nav.navigate("forwarding") }, modifier = Modifier.fillMaxWidth()) { Text("Call forwarding") }
         Button(onClick = { nav.navigate("admin") }, modifier = Modifier.fillMaxWidth()) { Text("Administration") }
         OutlinedButton(onClick = { nav.navigate("settings") }, modifier = Modifier.fillMaxWidth()) { Text("Connection & notifications") }
         SectionCard("About") {

@@ -6,4 +6,5 @@ export type {
   CallForwardingRuleJson as CallForwardingRuleJSON,
   CallJson as CallJSON,
   EventJson as EventJSON,
+  VoicemailResponse as VoicemailJSON,
 } from "./src/types.gen";

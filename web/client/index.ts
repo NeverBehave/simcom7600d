@@ -25,6 +25,12 @@ import {
   callsMerge,
   callsHangup,
   callsDtmf,
+  voicemailsList,
+  voicemailsSync,
+  voicemailsGet,
+  voicemailsUpdate,
+  voicemailsDelete,
+  voicemailsAudio,
   eventsList,
 	adminCapabilities,
   adminReconcile,
@@ -79,6 +85,15 @@ export class Sim7600Client {
     merge: callsMerge,
     hangup: callsHangup,
     dtmf: callsDtmf,
+  };
+
+  voicemails = {
+    list: voicemailsList,
+    sync: voicemailsSync,
+    get: voicemailsGet,
+    update: voicemailsUpdate,
+    delete: voicemailsDelete,
+    audio: voicemailsAudio,
   };
 
   events = {

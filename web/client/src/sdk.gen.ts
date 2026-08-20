@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminAtData, AdminAtErrors, AdminAtResetData, AdminAtResetErrors, AdminAtResetResponses, AdminAtResponses, AdminCapabilitiesData, AdminCapabilitiesErrors, AdminCapabilitiesResponses, AdminQueueData, AdminQueueErrors, AdminQueueResponses, AdminReconcileData, AdminReconcileErrors, AdminReconcileResponses, AdminVacuumData, AdminVacuumErrors, AdminVacuumResponses, CallForwardingGetData, CallForwardingGetErrors, CallForwardingGetResponses, CallForwardingUpdateData, CallForwardingUpdateErrors, CallForwardingUpdateResponses, CallsAnswerData, CallsAnswerErrors, CallsAnswerResponses, CallsDialData, CallsDialErrors, CallsDialResponses, CallsDtmfData, CallsDtmfErrors, CallsDtmfResponses, CallsGetData, CallsGetErrors, CallsGetResponses, CallsHangupData, CallsHangupErrors, CallsHangupResponses, CallsHoldData, CallsHoldErrors, CallsHoldResponses, CallsListData, CallsListErrors, CallsListResponses, CallsMergeData, CallsMergeErrors, CallsMergeResponses, CallsRejectData, CallsRejectErrors, CallsRejectResponses, CallsResumeData, CallsResumeErrors, CallsResumeResponses, EventsListData, EventsListErrors, EventsListResponses, SmsDeleteData, SmsDeleteErrors, SmsDeleteResponses, SmsGetData, SmsGetErrors, SmsGetResponses, SmsListData, SmsListErrors, SmsListResponses, SmsSendData, SmsSendErrors, SmsSendResponses, StatusGetData, StatusGetErrors, StatusGetResponses } from './types.gen';
+import type { AdminAtData, AdminAtErrors, AdminAtResetData, AdminAtResetErrors, AdminAtResetResponses, AdminAtResponses, AdminCapabilitiesData, AdminCapabilitiesErrors, AdminCapabilitiesResponses, AdminQueueData, AdminQueueErrors, AdminQueueResponses, AdminReconcileData, AdminReconcileErrors, AdminReconcileResponses, AdminVacuumData, AdminVacuumErrors, AdminVacuumResponses, CallForwardingGetData, CallForwardingGetErrors, CallForwardingGetResponses, CallForwardingUpdateData, CallForwardingUpdateErrors, CallForwardingUpdateResponses, CallsAnswerData, CallsAnswerErrors, CallsAnswerResponses, CallsDialData, CallsDialErrors, CallsDialResponses, CallsDtmfData, CallsDtmfErrors, CallsDtmfResponses, CallsGetData, CallsGetErrors, CallsGetResponses, CallsHangupData, CallsHangupErrors, CallsHangupResponses, CallsHoldData, CallsHoldErrors, CallsHoldResponses, CallsListData, CallsListErrors, CallsListResponses, CallsMergeData, CallsMergeErrors, CallsMergeResponses, CallsRejectData, CallsRejectErrors, CallsRejectResponses, CallsResumeData, CallsResumeErrors, CallsResumeResponses, EventsListData, EventsListErrors, EventsListResponses, SmsDeleteData, SmsDeleteErrors, SmsDeleteResponses, SmsGetData, SmsGetErrors, SmsGetResponses, SmsListData, SmsListErrors, SmsListResponses, SmsSendData, SmsSendErrors, SmsSendResponses, StatusGetData, StatusGetErrors, StatusGetResponses, VoicemailsAudioData, VoicemailsAudioResponses, VoicemailsDeleteData, VoicemailsDeleteErrors, VoicemailsDeleteResponses, VoicemailsGetData, VoicemailsGetErrors, VoicemailsGetResponses, VoicemailsListData, VoicemailsListErrors, VoicemailsListResponses, VoicemailsSyncData, VoicemailsSyncErrors, VoicemailsSyncResponses, VoicemailsUpdateData, VoicemailsUpdateErrors, VoicemailsUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -251,5 +251,63 @@ export const smsGet = <ThrowOnError extends boolean = false>(options: Options<Sm
 export const statusGet = <ThrowOnError extends boolean = false>(options: Options<StatusGetData, ThrowOnError>): RequestResult<StatusGetResponses, StatusGetErrors, ThrowOnError> => (options.client ?? client).get<StatusGetResponses, StatusGetErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/status',
+    ...options
+});
+
+/**
+ * List voicemail
+ */
+export const voicemailsList = <ThrowOnError extends boolean = false>(options: Options<VoicemailsListData, ThrowOnError>): RequestResult<VoicemailsListResponses, VoicemailsListErrors, ThrowOnError> => (options.client ?? client).get<VoicemailsListResponses, VoicemailsListErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/voicemails',
+    ...options
+});
+
+/**
+ * Sync voicemail mailbox
+ */
+export const voicemailsSync = <ThrowOnError extends boolean = false>(options: Options<VoicemailsSyncData, ThrowOnError>): RequestResult<VoicemailsSyncResponses, VoicemailsSyncErrors, ThrowOnError> => (options.client ?? client).post<VoicemailsSyncResponses, VoicemailsSyncErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/voicemails/sync',
+    ...options
+});
+
+/**
+ * Delete voicemail
+ */
+export const voicemailsDelete = <ThrowOnError extends boolean = false>(options: Options<VoicemailsDeleteData, ThrowOnError>): RequestResult<VoicemailsDeleteResponses, VoicemailsDeleteErrors, ThrowOnError> => (options.client ?? client).delete<VoicemailsDeleteResponses, VoicemailsDeleteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/voicemails/{id}',
+    ...options
+});
+
+/**
+ * Get voicemail metadata
+ */
+export const voicemailsGet = <ThrowOnError extends boolean = false>(options: Options<VoicemailsGetData, ThrowOnError>): RequestResult<VoicemailsGetResponses, VoicemailsGetErrors, ThrowOnError> => (options.client ?? client).get<VoicemailsGetResponses, VoicemailsGetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/voicemails/{id}',
+    ...options
+});
+
+/**
+ * Update voicemail read state
+ */
+export const voicemailsUpdate = <ThrowOnError extends boolean = false>(options: Options<VoicemailsUpdateData, ThrowOnError>): RequestResult<VoicemailsUpdateResponses, VoicemailsUpdateErrors, ThrowOnError> => (options.client ?? client).put<VoicemailsUpdateResponses, VoicemailsUpdateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/voicemails/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Play or download voicemail audio
+ */
+export const voicemailsAudio = <ThrowOnError extends boolean = false>(options: Options<VoicemailsAudioData, ThrowOnError>): RequestResult<VoicemailsAudioResponses, unknown, ThrowOnError> => (options.client ?? client).get<VoicemailsAudioResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/voicemails/{id}/audio',
     ...options
 });

@@ -115,6 +115,14 @@ export function notificationPayload(ev: EventLike): NotificationPayload | null {
       href: thread ? `/sms/${encodeURIComponent(thread)}` : '/sms',
     };
   }
+  if (ev.kind === 'voicemail.arrived') {
+    return {
+      title: 'New voicemail',
+      body: 'A new voicemail is ready to play.',
+      tag: `voicemail-${ev.ref_id || ev.id}`,
+      href: ev.ref_id ? `/voicemail/${encodeURIComponent(ev.ref_id)}` : '/voicemail',
+    };
+  }
   return null;
 }
 
@@ -163,10 +171,13 @@ function routeInvalidations(ev: EventLike): readonly (readonly unknown[])[] {
   if (ev.kind.startsWith('sms.')) {
     keys.push(['sms']);
     if (ev.ref_id) keys.push(['sms', 'item', ev.ref_id]);
-  } else if (ev.kind.startsWith('call.')) {
-    keys.push(['calls']);
-    if (ev.ref_id) keys.push(['calls', 'item', ev.ref_id]);
-  } else if (ev.kind.startsWith('modem.') || ev.kind.startsWith('net.')) {
+	} else if (ev.kind.startsWith('call.')) {
+		keys.push(['calls']);
+		if (ev.ref_id) keys.push(['calls', 'item', ev.ref_id]);
+	} else if (ev.kind.startsWith('voicemail.')) {
+		keys.push(['voicemails']);
+		if (ev.ref_id) keys.push(['voicemails', 'item', ev.ref_id]);
+	} else if (ev.kind.startsWith('modem.') || ev.kind.startsWith('net.')) {
     keys.push(['status']);
   }
   return keys;

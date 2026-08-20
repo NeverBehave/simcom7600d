@@ -101,6 +101,7 @@ class EventStreamService : Service() {
             "call.ringing" -> notifyIncomingCall(refId, detail.optString("from", event.optString("raw")))
             "call.updated", "call.ended" -> cancelCallNotification(refId)
             "sms.arrived" -> notifySms(refId, detail.optString("from"), detail.optString("body"))
+            "voicemail.arrived" -> notifyVoicemail(refId)
         }
     }
 
@@ -143,6 +144,21 @@ class EventStreamService : Service() {
         notify(notificationId(messageId, MESSAGE_NOTIFICATION_BASE), notification)
     }
 
+    private fun notifyVoicemail(voicemailId: String) {
+        val route = if (voicemailId.isBlank()) "voicemail" else "voicemail/$voicemailId"
+        val notification = NotificationCompat.Builder(this, CHANNEL_VOICEMAIL)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("New voicemail")
+            .setContentText("Tap to listen")
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setAutoCancel(true)
+            .setContentIntent(activityIntent(route, notificationId(voicemailId, VOICEMAIL_NOTIFICATION_BASE)))
+            .build()
+        notify(notificationId(voicemailId, VOICEMAIL_NOTIFICATION_BASE), notification)
+    }
+
     private fun cancelCallNotification(callId: String) {
         if (callId.isNotBlank()) getSystemService(NotificationManager::class.java)
             .cancel(notificationId(callId, CALL_NOTIFICATION_BASE))
@@ -181,6 +197,9 @@ class EventStreamService : Service() {
         manager.createNotificationChannel(NotificationChannel(CHANNEL_MESSAGES, "Messages", NotificationManager.IMPORTANCE_HIGH).apply {
             lockscreenVisibility = android.app.Notification.VISIBILITY_PRIVATE
         })
+        manager.createNotificationChannel(NotificationChannel(CHANNEL_VOICEMAIL, "Voicemail", NotificationManager.IMPORTANCE_HIGH).apply {
+            lockscreenVisibility = android.app.Notification.VISIBILITY_PRIVATE
+        })
     }
 
     private fun notify(id: Int, notification: android.app.Notification) {
@@ -196,9 +215,11 @@ class EventStreamService : Service() {
         const val CHANNEL_CONNECTION = "sim7600.connection"
         const val CHANNEL_CALLS = "sim7600.calls"
         const val CHANNEL_MESSAGES = "sim7600.messages"
+        const val CHANNEL_VOICEMAIL = "sim7600.voicemail"
         const val ACTION_STOP = "org.n4b5.sim7600.STOP_EVENTS"
         const val CALL_NOTIFICATION_BASE = 10_000
         private const val MESSAGE_NOTIFICATION_BASE = 200_000
+        private const val VOICEMAIL_NOTIFICATION_BASE = 310_000
         private const val CONNECTION_NOTIFICATION = 7
 
         fun start(context: Context) {

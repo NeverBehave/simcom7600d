@@ -19,6 +19,7 @@ import (
 	"sim7600d/internal/store"
 	"sim7600d/internal/ttyx"
 	"sim7600d/internal/urc"
+	"sim7600d/internal/voicemail"
 )
 
 var Version = "dev"
@@ -79,6 +80,13 @@ func run(args []string) error {
 	go rec.RunForever(ctx, bus)
 	go retentionSweepForever(ctx, st, cfg.Retention)
 
+	var voicemailService *voicemail.Service
+	if cfg.Voicemail.Enabled {
+		voicemailService = voicemail.New(st, mo)
+		go voicemailService.Run(ctx, cfg.voicemailInterval)
+		slog.Info("voicemail sync enabled", "interval", cfg.voicemailInterval)
+	}
+
 	var audioBridge *callaudio.Bridge
 	if cfg.Audio.Device != "" {
 		audioBridge = callaudio.New(mo, cfg.Audio.Device)
@@ -91,6 +99,7 @@ func run(args []string) error {
 		Modem:     mo,
 		Store:     st,
 		CallAudio: audioBridge,
+		Voicemail: voicemailService,
 		Admin: &api.Admin{
 			Reconcile: rec.Reconcile,
 			QueueInfo: func() map[string]any {
