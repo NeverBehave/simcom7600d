@@ -5,6 +5,10 @@ const BASE_URL =
 
 let _client: Sim7600Client | null = null;
 
+export function apiURL(path: string): string {
+  return BASE_URL.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
+}
+
 /**
  * Configure the SDK singleton with the given token, or clear it when null.
  * Calling Sim7600Client's constructor reconfigures the underlying hey-api

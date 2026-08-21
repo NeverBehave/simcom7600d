@@ -19,6 +19,8 @@ import org.n4b5.sim7600.model.ModemStatus
 import org.n4b5.sim7600.model.ServerConfig
 import org.n4b5.sim7600.model.SmsMessage
 import org.n4b5.sim7600.model.VoiceCall
+import org.n4b5.sim7600.model.Voicemail
+import java.io.File
 import java.io.IOException
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -74,6 +76,36 @@ class ApiClient(val config: ServerConfig) {
         requestJson("GET", "/v1/calls?limit=$limit").array("items").objects().map(VoiceCall::fromJson)
 
     suspend fun getCall(id: String): VoiceCall = VoiceCall.fromJson(requestJson("GET", "/v1/calls/${encode(id)}"))
+
+    suspend fun listVoicemails(limit: Int = 200): List<Voicemail> =
+        requestJson("GET", "/v1/voicemails?limit=$limit").array("items").objects().map(Voicemail::fromJson)
+
+    suspend fun syncVoicemails() { requestJson("POST", "/v1/voicemails/sync") }
+
+    suspend fun getVoicemail(id: String): Voicemail =
+        Voicemail.fromJson(requestJson("GET", "/v1/voicemails/${encode(id)}"))
+
+    suspend fun setVoicemailRead(id: String, read: Boolean): Voicemail = Voicemail.fromJson(
+        requestJson("PUT", "/v1/voicemails/${encode(id)}", JSONObject().put("read", read)),
+    )
+
+    suspend fun deleteVoicemail(id: String) {
+        requestJson("DELETE", "/v1/voicemails/${encode(id)}")
+    }
+
+    suspend fun downloadVoicemailAudio(id: String, target: File) = withContext(Dispatchers.IO) {
+        val request = requestBuilder("/v1/voicemails/${encode(id)}/audio").get().build()
+        try {
+            execute(request).use { response ->
+                if (!response.isSuccessful) decodeJson(response)
+                val body = response.body ?: throw IOException("Voicemail audio response was empty")
+                body.byteStream().use { input -> target.outputStream().use { output -> input.copyTo(output) } }
+            }
+        } catch (error: Throwable) {
+            target.delete()
+            throw error
+        }
+    }
 
     suspend fun dial(to: String): VoiceCall = VoiceCall.fromJson(
         requestJson(

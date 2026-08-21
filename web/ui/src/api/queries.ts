@@ -6,6 +6,8 @@ import type {
   CallsListData,
   EventsListData,
   CallForwardingRuleJSON,
+  VoicemailJSON,
+  VoicemailsListData,
 } from '@sim7600d/client/types';
 
 export const qk = {
@@ -15,6 +17,8 @@ export const qk = {
   smsItem: (id: string) => ['sms', 'item', id] as const,
   calls: (params?: CallsListData['query']) => ['calls', params ?? {}] as const,
   callsItem: (id: string) => ['calls', 'item', id] as const,
+  voicemails: (params?: VoicemailsListData['query']) => ['voicemails', params ?? {}] as const,
+  voicemailItem: (id: string) => ['voicemails', 'item', id] as const,
   events: (params?: EventsListData['query']) => ['events', params ?? {}] as const,
   adminQueue: ['admin', 'queue'] as const,
 };
@@ -92,6 +96,50 @@ export function useCallItem(id: string | undefined) {
     enabled: !!id,
     queryFn: async () => unwrap(await api().calls.get({ path: { id: id! } } as any)),
 	refetchInterval: 1000,
+  });
+}
+
+export function useVoicemailsList(params?: VoicemailsListData['query']) {
+  return useQuery({
+    queryKey: qk.voicemails(params),
+    queryFn: async () => unwrap(await api().voicemails.list({ query: params } as any)),
+    refetchInterval: 15000,
+  });
+}
+
+export function useVoicemailItem(id: string | undefined) {
+  return useQuery({
+    queryKey: qk.voicemailItem(id ?? ''),
+    enabled: !!id,
+    queryFn: async () => unwrap(await api().voicemails.get({ path: { id: id! } } as any)),
+  });
+}
+
+export function useVoicemailReadState() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, read }: { id: string; read: boolean }) =>
+      unwrap(await api().voicemails.update({ path: { id }, body: { read } } as any)),
+    onSuccess: (updated: VoicemailJSON, input) => {
+      qc.setQueryData(qk.voicemailItem(input.id), updated);
+      qc.invalidateQueries({ queryKey: ['voicemails'] });
+    },
+  });
+}
+
+export function useVoicemailDelete() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => unwrap(await api().voicemails.delete({ path: { id } } as any)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['voicemails'] }),
+  });
+}
+
+export function useVoicemailSync() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => unwrap(await api().voicemails.sync({} as any)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['voicemails'] }),
   });
 }
 

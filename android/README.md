@@ -11,6 +11,8 @@ set:
 - full-duplex 16 kHz PCM call audio using the phone microphone and speaker,
   including mute and test-tone controls;
 - carrier call-forwarding status and updates;
+- visual voicemail listing, authenticated playback, heard state, callback,
+  deletion, manual sync, and new-voicemail notifications;
 - event filtering and administrator reconcile, queue, VACUUM, modem reset, and
   optional AT-console operations;
 - an authenticated foreground event stream with high-priority incoming-call

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Bell, BellOff, LayoutDashboard, MessageSquare, Phone, PhoneForwarded, ListTree, Wrench, LogOut, MoreHorizontal } from 'lucide-react';
+import { Bell, BellOff, LayoutDashboard, MessageSquare, Phone, PhoneForwarded, ListTree, Wrench, LogOut, MoreHorizontal, Voicemail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useAuth } from '@/auth/AuthProvider';
@@ -11,6 +11,7 @@ const NAV = [
   { to: '/',       label: 'Dashboard', icon: LayoutDashboard },
   { to: '/sms',    label: 'SMS',       icon: MessageSquare },
   { to: '/calls',  label: 'Calls',     icon: Phone },
+  { to: '/voicemail', label: 'Voicemail', icon: Voicemail },
   { to: '/call-forwarding', label: 'Call forwarding', icon: PhoneForwarded },
   { to: '/events', label: 'Events',    icon: ListTree },
   { to: '/admin',  label: 'Admin',     icon: Wrench },
@@ -75,7 +76,7 @@ export function AppShell() {
           type="button"
           className={cn(
             'flex min-w-0 flex-col items-center justify-center gap-1 rounded-md text-[11px] font-medium',
-            location.pathname === '/events' || location.pathname === '/admin' ? 'text-brand-700' : 'text-neutral-500',
+            ['/call-forwarding', '/events', '/admin'].some((path) => location.pathname.startsWith(path)) ? 'text-brand-700' : 'text-neutral-500',
           )}
           onClick={() => setMoreOpen(true)}
         >

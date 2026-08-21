@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/BurntSushi/toml"
 )
@@ -29,7 +30,11 @@ type Config struct {
 		Path string `toml:"path"`
 	} `toml:"storage"`
 	Retention RetentionConfig `toml:"retention"`
-	Admin     struct {
+	Voicemail struct {
+		Enabled      bool   `toml:"enabled"`
+		SyncInterval string `toml:"sync_interval"`
+	} `toml:"voicemail"`
+	Admin struct {
 		ATPassthrough   bool `toml:"at_passthrough"`
 		AllowModemReset bool `toml:"allow_modem_reset"`
 	} `toml:"admin"`
@@ -39,7 +44,8 @@ type Config struct {
 	} `toml:"log"`
 
 	// Resolved at runtime, not in TOML.
-	authToken string
+	authToken         string
+	voicemailInterval time.Duration
 }
 
 type RetentionConfig struct {
@@ -56,6 +62,8 @@ func defaultConfig() Config {
 	c.Modem.Baud = 115200
 	c.Storage.Path = "sim7600d.db"
 	c.Retention.IdemHours = 24
+	c.Voicemail.SyncInterval = "5m"
+	c.voicemailInterval = 5 * time.Minute
 	c.Log.Level = "info"
 	return c
 }
@@ -101,6 +109,11 @@ func Parse(args []string) (Config, error) {
 		return Config{}, err
 	}
 	c.authToken = tok
+	interval, err := time.ParseDuration(c.Voicemail.SyncInterval)
+	if err != nil || interval < time.Minute {
+		return Config{}, errors.New("voicemail sync_interval must be a duration of at least 1m")
+	}
+	c.voicemailInterval = interval
 	return c, nil
 }
 

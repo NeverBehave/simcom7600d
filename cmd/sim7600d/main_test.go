@@ -49,6 +49,16 @@ func TestResolveAuthTokenRejectsWeakConfiguredToken(t *testing.T) {
 	}
 }
 
+func TestVoicemailDefaultsToOptIn(t *testing.T) {
+	cfg := defaultConfig()
+	if cfg.Voicemail.Enabled {
+		t.Fatal("voicemail mailbox access must be disabled until explicitly configured")
+	}
+	if cfg.voicemailInterval != 5*time.Minute {
+		t.Fatalf("voicemail interval = %s, want 5m", cfg.voicemailInterval)
+	}
+}
+
 func TestHTTPServerTimeouts(t *testing.T) {
 	srv := newHTTPServer("127.0.0.1:0", http.NotFoundHandler())
 	if srv.ReadHeaderTimeout != 10*time.Second || srv.IdleTimeout != 2*time.Minute {

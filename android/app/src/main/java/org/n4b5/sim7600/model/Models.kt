@@ -78,6 +78,31 @@ data class SmsThread(val key: String, val number: String, val messages: List<Sms
     val latest: SmsMessage get() = messages.last()
 }
 
+data class Voicemail(
+    val id: String,
+    val sourceId: String,
+    val from: String,
+    val receivedAt: String,
+    val durationMs: Int,
+    val read: Boolean,
+    val readAt: String,
+    val contentType: String,
+    val audioBytes: Int,
+    val audioUrl: String,
+    val transcript: String,
+) {
+    companion object {
+        fun fromJson(json: JSONObject) = Voicemail(
+            id = json.string("id"), sourceId = json.string("source_id"),
+            from = json.string("from"), receivedAt = json.string("received_at"),
+            durationMs = json.optInt("duration_ms"), read = json.optBoolean("read"),
+            readAt = json.string("read_at"), contentType = json.string("content_type"),
+            audioBytes = json.optInt("audio_bytes"), audioUrl = json.string("audio_url"),
+            transcript = json.string("transcript"),
+        )
+    }
+}
+
 fun groupMessages(messages: List<SmsMessage>): List<SmsThread> = messages
     .groupBy { phoneKey(it.peer).ifBlank { it.peer } }
     .map { (key, values) ->

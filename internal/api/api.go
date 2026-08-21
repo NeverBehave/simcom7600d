@@ -3,6 +3,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -14,7 +15,12 @@ import (
 
 	"sim7600d/internal/modem"
 	"sim7600d/internal/store"
+	"sim7600d/internal/voicemail"
 )
+
+type VoicemailSyncer interface {
+	Sync(context.Context) (voicemail.SyncResult, error)
+}
 
 type Config struct {
 	AuthToken          string
@@ -22,6 +28,7 @@ type Config struct {
 	Store              *store.Store // for /v1/events, /v1/admin/queue
 	Admin              *Admin
 	CallAudio          http.Handler
+	Voicemail          VoicemailSyncer
 	AllowATPassthrough bool
 	AllowModemReset    bool
 }
@@ -60,6 +67,7 @@ func NewServer(cfg Config) *Server {
 
 	authedR := r.With(authMiddleware(cfg.AuthToken))
 	registerEventsStream(authedR, cfg.Store, newEventStreamLimiter(4))
+	registerVoicemailAudioRoute(authedR, cfg.Store)
 	humaAuthedAPI := newHumaAPI(authedR.With(limitConcurrentRequests(16)))
 
 	registerStatus(humaAuthedAPI, cfg.Modem)
@@ -79,6 +87,7 @@ func NewServer(cfg Config) *Server {
 	registerCallsDTMF(humaAuthedAPI, cfg.Modem)
 	registerCallForwardingGet(humaAuthedAPI, cfg.Modem)
 	registerCallForwardingUpdate(humaAuthedAPI, cfg.Modem)
+	registerVoicemails(humaAuthedAPI, cfg.Store, cfg.Voicemail)
 	registerEventsList(humaAuthedAPI, cfg.Store)
 	registerAdminCapabilities(humaAuthedAPI, cfg)
 	registerAdminReconcile(humaAuthedAPI, cfg)

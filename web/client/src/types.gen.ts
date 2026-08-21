@@ -249,6 +249,55 @@ export type StatusSim = {
     state: 'ready' | 'pin_required' | 'absent';
 };
 
+export type SyncResult = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    added: number;
+    fetched: number;
+    skipped: number;
+    updated: number;
+};
+
+export type VoicemailListOutputBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    items: Array<VoicemailResponse> | null;
+};
+
+export type VoicemailResponse = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    audio_bytes: number;
+    audio_url: string;
+    content_type: string;
+    duration_ms: number;
+    from: string;
+    id: string;
+    read: boolean;
+    read_at?: string;
+    received_at: string;
+    source_id: string;
+    source_sms_id?: string;
+    transcript?: string;
+};
+
+export type VoicemailUpdateInputBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    /**
+     * Mark the voicemail heard or unheard
+     */
+    read: boolean;
+};
+
 export type AdminAtInputBodyWritable = {
     /**
      * Raw AT command
@@ -381,6 +430,39 @@ export type StatusResponseBodyWritable = {
     sim: StatusSim;
     ts: string;
     uptime_s: number;
+};
+
+export type SyncResultWritable = {
+    added: number;
+    fetched: number;
+    skipped: number;
+    updated: number;
+};
+
+export type VoicemailListOutputBodyWritable = {
+    items: Array<VoicemailResponseWritable> | null;
+};
+
+export type VoicemailResponseWritable = {
+    audio_bytes: number;
+    audio_url: string;
+    content_type: string;
+    duration_ms: number;
+    from: string;
+    id: string;
+    read: boolean;
+    read_at?: string;
+    received_at: string;
+    source_id: string;
+    source_sms_id?: string;
+    transcript?: string;
+};
+
+export type VoicemailUpdateInputBodyWritable = {
+    /**
+     * Mark the voicemail heard or unheard
+     */
+    read: boolean;
 };
 
 export type AdminAtData = {
@@ -1125,3 +1207,179 @@ export type StatusGetResponses = {
 };
 
 export type StatusGetResponse = StatusGetResponses[keyof StatusGetResponses];
+
+export type VoicemailsListData = {
+    body?: never;
+    headers: {
+        Authorization: string;
+    };
+    path?: never;
+    query?: {
+        /**
+         * Return only unheard voicemail
+         */
+        unread?: boolean;
+        /**
+         * Maximum items
+         */
+        limit?: number;
+    };
+    url: '/v1/voicemails';
+};
+
+export type VoicemailsListErrors = {
+    /**
+     * Error
+     */
+    default: ApiError;
+};
+
+export type VoicemailsListError = VoicemailsListErrors[keyof VoicemailsListErrors];
+
+export type VoicemailsListResponses = {
+    /**
+     * OK
+     */
+    200: VoicemailListOutputBody;
+};
+
+export type VoicemailsListResponse = VoicemailsListResponses[keyof VoicemailsListResponses];
+
+export type VoicemailsSyncData = {
+    body?: never;
+    headers: {
+        Authorization: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/voicemails/sync';
+};
+
+export type VoicemailsSyncErrors = {
+    /**
+     * Error
+     */
+    default: ApiError;
+};
+
+export type VoicemailsSyncError = VoicemailsSyncErrors[keyof VoicemailsSyncErrors];
+
+export type VoicemailsSyncResponses = {
+    /**
+     * OK
+     */
+    200: SyncResult;
+};
+
+export type VoicemailsSyncResponse = VoicemailsSyncResponses[keyof VoicemailsSyncResponses];
+
+export type VoicemailsDeleteData = {
+    body?: never;
+    headers: {
+        Authorization: string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/voicemails/{id}';
+};
+
+export type VoicemailsDeleteErrors = {
+    /**
+     * Error
+     */
+    default: ApiError;
+};
+
+export type VoicemailsDeleteError = VoicemailsDeleteErrors[keyof VoicemailsDeleteErrors];
+
+export type VoicemailsDeleteResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type VoicemailsDeleteResponse = VoicemailsDeleteResponses[keyof VoicemailsDeleteResponses];
+
+export type VoicemailsGetData = {
+    body?: never;
+    headers: {
+        Authorization: string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/voicemails/{id}';
+};
+
+export type VoicemailsGetErrors = {
+    /**
+     * Error
+     */
+    default: ApiError;
+};
+
+export type VoicemailsGetError = VoicemailsGetErrors[keyof VoicemailsGetErrors];
+
+export type VoicemailsGetResponses = {
+    /**
+     * OK
+     */
+    200: VoicemailResponse;
+};
+
+export type VoicemailsGetResponse = VoicemailsGetResponses[keyof VoicemailsGetResponses];
+
+export type VoicemailsUpdateData = {
+    body: VoicemailUpdateInputBodyWritable;
+    headers: {
+        Authorization: string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/voicemails/{id}';
+};
+
+export type VoicemailsUpdateErrors = {
+    /**
+     * Error
+     */
+    default: ApiError;
+};
+
+export type VoicemailsUpdateError = VoicemailsUpdateErrors[keyof VoicemailsUpdateErrors];
+
+export type VoicemailsUpdateResponses = {
+    /**
+     * OK
+     */
+    200: VoicemailResponse;
+};
+
+export type VoicemailsUpdateResponse = VoicemailsUpdateResponses[keyof VoicemailsUpdateResponses];
+
+export type VoicemailsAudioData = {
+    body?: never;
+    headers: {
+        Authorization: string;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/voicemails/{id}/audio';
+};
+
+export type VoicemailsAudioResponses = {
+    /**
+     * Voicemail audio with byte-range support
+     */
+    200: Blob | File;
+};
+
+export type VoicemailsAudioResponse = VoicemailsAudioResponses[keyof VoicemailsAudioResponses];

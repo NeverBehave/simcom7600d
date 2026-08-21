@@ -12,6 +12,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.n4b5.sim7600.model.ServerConfig
+import java.io.File
 
 class ApiClientTest {
     private lateinit var server: MockWebServer
@@ -78,6 +79,29 @@ class ApiClientTest {
         val request = client.eventStreamCall(73).request()
         assertEquals("/v1/events/stream?since=73", request.url.encodedPath + "?" + request.url.encodedQuery)
         assertEquals("Bearer secret-token", request.header("Authorization"))
+    }
+
+    @Test fun voicemailAudioDownloadUsesBearerAuth() = runBlocking {
+        server.enqueue(MockResponse().addHeader("Content-Type", "audio/wav").setBody("RIFF-audio"))
+        val target = File.createTempFile("voicemail-test", ".wav")
+        try {
+            client.downloadVoicemailAudio("vm-1", target)
+            val request = server.takeRequest()
+            assertEquals("/v1/voicemails/vm-1/audio", request.path)
+            assertEquals("Bearer secret-token", request.getHeader("Authorization"))
+            assertEquals("RIFF-audio", target.readText())
+        } finally {
+            target.delete()
+        }
+    }
+
+    @Test fun voicemailSyncUsesAuthenticatedPost() = runBlocking {
+        server.enqueue(MockResponse().setBody("""{"fetched":1,"added":1,"updated":0,"skipped":0}"""))
+        client.syncVoicemails()
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertEquals("/v1/voicemails/sync", request.path)
+        assertEquals("Bearer secret-token", request.getHeader("Authorization"))
     }
 
     @Test fun cloudflareGatewayErrorIncludesUsefulSmsDiagnostics() = runBlocking {

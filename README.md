@@ -7,7 +7,7 @@
 `sim7600d` turns a USB-connected SIMCom SIM7600 modem into a small,
 self-hosted phone service. A Go daemon owns the modem's AT command port,
 persists state in SQLite, exposes an authenticated REST API, and serves a web
-interface for SMS and voice calls.
+interface for SMS, voice calls, and visual voicemail.
 
 The repository also includes a native Android client with the same modem,
 messaging, call, forwarding, event, and administrative controls. Its foreground
@@ -27,6 +27,8 @@ numbers, messages, SIM or modem identifiers, credentials, or call records._
 - Read and update carrier voice call-forwarding rules for unconditional, busy,
   unanswered, and unreachable calls.
 - Send DTMF during an active call.
+- Sync carrier visual voicemail into SQLite, play it in the web or Android app,
+  manage heard state, call back, and delete local copies.
 - Speak and listen from a browser over an authenticated WebSocket.
 - Stream signed 16-bit, mono, 16 kHz PCM through the SIM7600 raw USB audio
   serial interface.
@@ -167,6 +169,11 @@ device = "/dev/serial/by-id/usb-SimTech__Incorporated_SimTech__Incorporated_0123
 [storage]
 path = "/var/lib/sim7600d/sim7600d.db"
 
+[voicemail]
+# Opt in to read the carrier mailbox credentials delivered by provisioning SMS.
+enabled = false
+sync_interval = "5m"
+
 [retention]
 events_days = 30
 sms_days = 365
@@ -196,6 +203,26 @@ digits, `-`, `.`, `_`, and `~`.
 Retention values are enforced hourly; `0` keeps that history indefinitely.
 Incomplete multipart SMS fragments are removed after seven days regardless of
 history retention.
+
+Voicemail mailbox access is disabled by default. When enabled, the daemon reads
+the newest supported T-Mobile `MBOXUPDATE` provisioning SMS, connects to that
+carrier IMAPS host read-only, and stores playable audio in SQLite. Install
+`ffmpeg` in the service PATH so AMR messages can be normalized to WAV. Mailbox
+credentials are used in memory and are not written to logs or configuration.
+An authorized live read-only fetch can be checked without persisting the
+provisioning SMS:
+
+```sh
+read -rs SIM7600D_VOICEMAIL_MBOXUPDATE
+export SIM7600D_VOICEMAIL_MBOXUPDATE
+go test -tags hardware ./internal/voicemail -run TestLiveMailboxFetch
+unset SIM7600D_VOICEMAIL_MBOXUPDATE
+```
+
+On a test host without `ffmpeg`, set
+`SIM7600D_VOICEMAIL_FETCH_ONLY=1` to validate the carrier login, MIME parsing,
+and fetched audio without running the AMR-to-WAV step. Production sync still
+requires `ffmpeg` for AMR voicemail.
 
 Open the configured address in a browser and enter that token. The OpenAPI
 3.1 document is available without authentication at `/openapi.json`; all

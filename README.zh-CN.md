@@ -154,6 +154,10 @@ device = "/dev/serial/by-id/usb-SimTech__Incorporated_SimTech__Incorporated_0123
 [storage]
 path = "/var/lib/sim7600d/sim7600d.db"
 
+[voicemail]
+enabled = false
+sync_interval = "5m"
+
 [retention]
 events_days = 30
 sms_days = 365
