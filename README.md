@@ -219,6 +219,11 @@ go test -tags hardware ./internal/voicemail -run TestLiveMailboxFetch
 unset SIM7600D_VOICEMAIL_MBOXUPDATE
 ```
 
+On a test host without `ffmpeg`, set
+`SIM7600D_VOICEMAIL_FETCH_ONLY=1` to validate the carrier login, MIME parsing,
+and fetched audio without running the AMR-to-WAV step. Production sync still
+requires `ffmpeg` for AMR voicemail.
+
 Open the configured address in a browser and enter that token. The OpenAPI
 3.1 document is available without authentication at `/openapi.json`; all
 modem operations require authentication.

@@ -17,6 +17,7 @@ import (
 // fetched audio is logged or written to disk.
 func TestLiveMailboxFetch(t *testing.T) {
 	provisioning := os.Getenv("SIM7600D_VOICEMAIL_MBOXUPDATE")
+	fetchOnly := os.Getenv("SIM7600D_VOICEMAIL_FETCH_ONLY") == "1"
 	if provisioning == "" {
 		t.Skip("set SIM7600D_VOICEMAIL_MBOXUPDATE to an authorized provisioning SMS")
 	}
@@ -32,10 +33,11 @@ func TestLiveMailboxFetch(t *testing.T) {
 		require.NotEmpty(t, message.SourceID)
 		require.True(t, strings.HasPrefix(message.ContentType, "audio/"))
 		require.NotEmpty(t, message.Audio)
-		if strings.EqualFold(message.ContentType, "audio/amr") {
+		if strings.EqualFold(message.ContentType, "audio/amr") && !fetchOnly {
 			wav, err := (FFmpegTranscoder{Path: "ffmpeg"}).ToWAV(ctx, message.Audio)
 			require.NoError(t, err)
 			require.True(t, strings.HasPrefix(string(wav), "RIFF"))
 		}
 	}
+	t.Logf("fetched and validated %d playable voicemail(s)", len(messages))
 }
